@@ -13,7 +13,7 @@ namespace ad
 	struct Real
 	{
 	public:
-		static_assert(N >= 0, "");
+		//static_assert(N >= 0, "");
 		Real() : Real(0) { }
 		Real(double v) {
 			fV[0] = v;
@@ -328,23 +328,21 @@ namespace ad
 		template<class T1>
 		struct Log
 		{
-			T1 const log_;
-			Log(T1 const &v1) : log_(v1) {
+			T1 const arg;
+			Log(T1 const &v1) : arg(v1) {
 			}
 
-			typedef typename T1::Diff Diff1;
-			typedef Div< Diff1, T1 > Diff;
+			typedef Div< typename T1::Diff, T1 > Diff;
 
 			Diff diff() const {
-				return Diff(log_.diff(), log_);
+				return Diff(arg.diff(), arg);
 			}
 
 			double v() const {
-				return std::log(log_.v());
+				return std::log(arg.v());
 			}
 
 		};
-
 
 		template<int I, int E>
 		struct Sm {
@@ -362,6 +360,15 @@ namespace ad
 			static void v(Real<N> &, Expr  &) {
 			}
 		};
+
+		template<int N, class T>
+		Real<N> ToReal(T &v) {
+			Real<N> res;
+			res.fV[0] = v.v();
+			Sm<1, Real<N>::fN>::v(res, v);
+			return res;
+		}
+
 	}
 
 	template<int N>
@@ -411,11 +418,8 @@ namespace ad
 	Real<N> operator*(Real<N> const &l, Real<N> const &r)
 	{
 		using namespace dts;
-		Real<N> res;
 		Times<RealDiff<0, N>, RealDiff<0, N> > mul(l, r);
-		res.fV[0] = mul.v();
-		Sm<1, Real<N>::fN>::v(res, mul);
-		return res;
+		return ToReal<N>(mul);
 	}
 
 	template<int N>
@@ -432,11 +436,8 @@ namespace ad
 	Real<N> operator/(Real<N> const &l, Real<N> const &r)
 	{
 		using namespace dts;
-		Real<N> res;
 		Div<RealDiff<0, N>, RealDiff<0, N> > div(l, r);
-		res.fV[0] = div.v();
-		Sm<1, Real<N>::fN>::v(res, div);
-		return res;
+		return ToReal<N>(div);
 	}
 
 
@@ -454,22 +455,16 @@ namespace ad
 	Real<N> sqrt(Real<N> const &l)
 	{
 		using namespace dts;
-		Real<N> res;
 		Sqrt<RealDiff<0, N> > sqrt_(l);
-		res.fV[0] = sqrt_.v();
-		Sm<1, Real<N>::fN>::v(res, sqrt_);
-		return res;
+		return ToReal<N>(sqrt_);
 	}
 
 	template<int N>
 	Real<N> log(Real<N> const &l)
 	{
 		using namespace dts;
-		Real<N> res;
 		Log<RealDiff<0, N> > log_(l);
-		res.fV[0] = log_.v();
-		Sm<1, Real<N>::fN>::v(res, log_);
-		return res;
+		return ToReal<N>(log_);
 	}
 
 	template<int i>
