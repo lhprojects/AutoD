@@ -1,5 +1,5 @@
 #include "AutoD.h"
-
+#include <chrono>
 #define TPrintf printf
 const double PI = 3.1415926535897932384626433;
 
@@ -127,6 +127,20 @@ int main() {
 		printf("%p\n", z.fV);
 
 
+	}
+
+	{
+		auto t0 = std::chrono::high_resolution_clock::now();
+		Real<3> res;
+		for (int i = 0; i < 100000; ++i) {
+			Real<3> x = Primary<3>(3);
+			Real<3> x2 = x * x;
+			Real<3> x2sqrt = sqrt(x2);
+			res = res + log(x2sqrt);
+		}
+		auto t1 = std::chrono::high_resolution_clock::now();
+		printf("time used: %d us\n", (int)std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count());
+		printf("%f %f %f %f\n", res.V(), res.D(1), res.D(2), res.D(3));
 	}
 
 
