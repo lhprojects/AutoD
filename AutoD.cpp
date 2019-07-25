@@ -131,12 +131,14 @@ int main() {
 
 	{
 		auto t0 = std::chrono::high_resolution_clock::now();
-		Real<3> res;
+		Real<4> res;
 		for (int i = 0; i < 100000; ++i) {
-			Real<3> x = Primary<3>(3);
-			Real<3> x2 = x * x;
-			Real<3> x2sqrt = sqrt(x2);
-			res = res + log(x2sqrt);
+			Real<4> x = Primary<4>(3);
+			Real<4> x2 = x * x;
+			Real<4> x2x = x * x + x;
+			Real<4> x2xx = x * x - x;
+			Real<4> x2xxsqrt = sqrt(x2xx);
+			res = res + log(x2xxsqrt);
 		}
 		auto t1 = std::chrono::high_resolution_clock::now();
 		printf("time used: %d us\n", (int)std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count());

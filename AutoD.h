@@ -115,6 +115,7 @@ namespace ad
 
 			T1 const add1;
 			T2 const add2;
+			double const v_;
 			typedef typename T1::Diff Diff1;
 			typedef typename T2::Diff Diff2;
 			typedef typename AddTraits<Diff1, Diff2>::Type Diff;
@@ -122,10 +123,10 @@ namespace ad
 			auto diff() const {
 				return AddTraits<Diff1, Diff2>::v(add1.diff(), add2.diff());
 			}
-			Add(T1 const &v1, T2 const &v2) : add1(v1), add2(v2) {
+			Add(T1 const &v1, T2 const &v2) : add1(v1), add2(v2), v_(add1.v() + add2.v()) {
 			}
 			double v() const {
-				return add1.v() + add2.v();
+				return v_;
 			}
 		};
 
@@ -149,7 +150,8 @@ namespace ad
 
 			T1 const sub1;
 			T2 const sub2;
-			Sub(T1 const &v1, T2 const &v2) : sub1(v1), sub2(v2) {
+			double const v_;
+			Sub(T1 const &v1, T2 const &v2) : sub1(v1), sub2(v2), v_(sub1.v() - sub2.v()) {
 			}
 			typedef typename T1::Diff Diff1;
 			typedef typename T2::Diff Diff2;
@@ -160,7 +162,7 @@ namespace ad
 			}
 
 			double v() const {
-				return sub1.v() - sub2.v();
+				return v_;
 			}
 
 		};
@@ -201,6 +203,7 @@ namespace ad
 		struct Times {
 			T1 const times1;
 			T2 const times2;
+			double const v_;
 
 			typedef typename T1::Diff Diff1;
 			typedef typename T2::Diff Diff2;
@@ -213,10 +216,11 @@ namespace ad
 					);
 			}
 
-			Times(T1 const &v1, T2 const &v2) : times1(v1), times2(v2) {
+			Times(T1 const &v1, T2 const &v2) : times1(v1), times2(v2), v_(times1.v() * times2.v()) {
 			}
+
 			double v() const {
-				return times1.v() * times2.v();
+				return v_;
 			}
 		};
 
@@ -245,7 +249,8 @@ namespace ad
 		template<class T1, int n>
 		struct PowN {
 			T1 const pown;
-			PowN(T1 const &v1) : pown(v1) { }
+			double const v_;
+			PowN(T1 const &v1) : pown(v1), v_(cal_v()) { }
 
 			typedef typename T1::Diff Diff1;
 			typedef typename PowNTraits<T1, n - 1>::Type PowNN1;
@@ -261,6 +266,10 @@ namespace ad
 			}
 
 			double v() const {
+				return v_;
+			}
+
+			double cal_v() const {
 				if (n == 0) return 1;
 				else if (n == 1) return pown.v();
 				else if (n == 2) return pown.v()*pown.v();
@@ -279,7 +288,8 @@ namespace ad
 		struct Div {
 			T1 const div1;
 			T2 const div2;
-			Div(T1 const &v1, T2 const &v2) : div1(v1), div2(v2) {
+			double const v_;
+			Div(T1 const &v1, T2 const &v2) : div1(v1), div2(v2), v_(div1.v()/div2.v()){
 			}
 
 			typedef typename T1::Diff Diff1;
@@ -300,7 +310,7 @@ namespace ad
 			}
 
 			double v() const {
-				return div1.v() / div2.v();
+				return v_;
 			}
 
 		};
@@ -308,39 +318,62 @@ namespace ad
 		template<class T1>
 		struct Sqrt
 		{
-			T1 const sqrt_;
-			Sqrt(T1 const &v1) : sqrt_(v1) {
+
+#if 1
+
+			T1 const arg_;
+			Sqrt(T1 const &v1) : arg_(v1) {
 			}
+			double v() const {
+				return sqrt(arg_.v());
+			}
+
+#else
+			T1 const arg_;
+			double const v_;
+			Sqrt(T1 const &v1) : arg_(v1), v_(sqrt(arg_.v())) {
+			}
+			double v() const {
+				return v_;
+			}
+#endif
+
 
 			typedef typename T1::Diff Diff1;
 			typedef Div< Times<Const, Diff1>, Sqrt<T1> > Diff;
 
 			Diff diff() const {
-				return Diff(Times<Const, Diff1>(Const(0.5), sqrt_.diff()), *this);
+				return Diff(Times<Const, Diff1>(Const(0.5), arg_.diff()), *this);
 			}
 
-			double v() const {
-				return std::sqrt(sqrt_.v());
-			}
 
 		};
 
 		template<class T1>
 		struct Log
 		{
-			T1 const arg;
-			Log(T1 const &v1) : arg(v1) {
+			T1 const arg_;
+#if 0
+			double const v_;
+			Log(T1 const &v1) : arg_(v1), v_(log(arg_.v())) {
 			}
+			double v() const {
+				return v_;
+			}
+#else
+			Log(T1 const &v1) : arg_(v1) {
+			}
+			double v() const {
+				return log(arg_.v());
+			}
+#endif
 
 			typedef Div< typename T1::Diff, T1 > Diff;
 
 			Diff diff() const {
-				return Diff(arg.diff(), arg);
+				return Diff(arg_.diff(), arg_);
 			}
 
-			double v() const {
-				return std::log(arg.v());
-			}
 
 		};
 
