@@ -1,6 +1,6 @@
 # AutoD
 
-Calculate the value of function, at the same time, calculating the (higher order) derivative.
+Calculate the value of function, at the same time, calculating the (arbitrary higher order) derivative.
 
 # Header Only Project
 This is a header only project.
