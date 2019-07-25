@@ -16,15 +16,15 @@ in front of your source file.
 int main() {
 using namespace ad;        // The namespace of the library.
 Real<2> x = Primary<2>(1); // Primary is a `making` function.
-                           // Real<2> store the value and the first order, now it is (x, dx/dx) = (1, 1)
-Real<2> logx = log(x);     // now logx store the (log(x), d log(x)/dx) = (0, 1)
-PrimaryReset(logx);        // now logx store the (0, 1)
-                           // it is like that we think the logx is the primary variable
+                           // Real<2> store the value and the first order, now it is (x, dx/dx, d^x/dx^2) = (1, 1, 0)
 
-Real<2> y = Primary<2>(1); // y is (1, 1)
-Real<2> xplusy = x + y;    // xplus y is (2, 2)
-                           // It means we can't distinguish primary variables.
-                           // In another word, all primary variables represent one variable.
+Real<2> y = 1;             // y is (1, 0, 0)
+                           // y is not variable
+PrimaryReset(y, 1);        // now y store the (0, 1, 0)
+                           // the y is now variable
+
+Real<2> xplusy = x + y;    // xplus y is (2, 2, 0)
+                           // All primary variables represent one variable.
                            // It is by nature of light weight design of this library.
 
 }
